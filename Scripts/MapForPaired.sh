@@ -8,12 +8,12 @@ set -e
 
 
 ### parameters for mapping
-threads = $1
-assembly = $2
-spike_in = $3
-basename = $4
-file1 = $5
-file2 = $6
+threads=$1
+assembly=$2
+spike_in=$3
+basename=$4
+file1=$5
+file2=$6
 
 
 ###1.adapter trimming
