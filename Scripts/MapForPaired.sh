@@ -8,9 +8,9 @@ set -e
 
 
 ### parameters for mapping
-assembly=$1
-spike_in=$2
-threads=$3
+threads=$1
+assembly=$2
+spike_in=$3
 basename=$4
 file1=$5
 file2=$6
