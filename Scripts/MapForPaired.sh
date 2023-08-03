@@ -8,13 +8,12 @@ set -e
 
 
 ### parameters for mapping
-bowtie2_index_path = $1
-threads = $2
-assembly = $3
-spike_in = $4
-basename = $5
-file1 = $6
-file2 = $7
+threads = $1
+assembly = $2
+spike_in = $3
+basename = $4
+file1 = $5
+file2 = $6
 
 
 ###1.adapter trimming
@@ -30,7 +29,7 @@ echo $time
 echo "Mapping by bowtie2"
 time=`date`
 echo $time
-bowtie2 -X 1000 -p $threads -x $bowtie2_index_path$assembly -1 ${basename}_R1.trim.fq.gz -2 ${basename}_R2.trim.fq.gz -S ${basename}.sam >> ${basename}_ChIP-seq_mapping_summary.txt 2>&1
+bowtie2 -X 1000 -p $threads -x /share/Genomes/${assembly}/bowtie2/${assembly} -1 ${basename}_R1.trim.fq.gz -2 ${basename}_R2.trim.fq.gz -S ${basename}.sam >> ${basename}_ChIP-seq_mapping_summary.txt 2>&1
 sed -i '/^@PG/d' ${basename}.sam
 samtools sort -@ 3 ${basename}.sam -o ${basename}_sorted.bam
 samtools index ${basename}_sorted.bam
@@ -51,7 +50,7 @@ genomeCoverageBed -bg -i ${basename}.sort.bed -g /share/Genomes/${assembly}/Sequ
 
 ###4.spike-in
 #i.map to spike-in genome
-bowtie2 -X 1000 -p $threads -x $bowtie2_index_path$spike_in -1 ${basename}_R1.trim.fq.gz -2 ${basename}_R2.trim.fq.gz -S ${basename}.spike.sam >> ${basename}_ChIP-seq_mapping_summary.txt 2>&1
+bowtie2 -X 1000 -p $threads -x /share/Genomes/${spike_in}/bowtie2/${spike_in} -1 ${basename}_R1.trim.fq.gz -2 ${basename}_R2.trim.fq.gz -S ${basename}.spike.sam >> ${basename}_ChIP-seq_mapping_summary.txt 2>&1
 sed -i '/^@PG/d' ${basename}.spike.sam
 samtools sort -@ 3 ${basename}.spike.sam -o ${basename}_sorted.spike.bam
 samtools index ${basename}_sorted.spike.bam
