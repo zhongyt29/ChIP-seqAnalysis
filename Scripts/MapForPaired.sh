@@ -66,8 +66,13 @@ echo "" >> ${basename}_ChIP-seq_mapping_summary.txt
 echo "Average length of DNA fragments" >> ${basename}_ChIP-seq_mapping_summary.txt
 samtools view -h  ${basename}_rmdup.spike.bam | python /share/home/zhongyiting/pipeline/ChIP-seq/src/SAMtoBED.py  -i - -o  ${basename}.spike.bed -x -v >> ${basename}_ChIP-seq_mapping_summary.txt 2>&1
 
+###5.normalize and make bigwig file
+nor=$(wc -l ${basename}.spike.bed | cut -d ' ' -f 1)
+awk '{printf("%s\t%d\t%d\t%.2f\n",$1,$2,$3,$4*'${nor}')}' ${basename}.bg > ${basename}.norm.bg
+bedSort ${basename}.norm.bg ${basename}.norm.sort.bg
+bedGraphToBigWig ${basename}.norm.sort.bg /share/Genomes/${genome}/Sequence/${genome}.chrom.sizes ${basename}.norm.bw
 
-###5.organize files and folders
+###6.organize files and folders
 rm -f *sam
 rm -f ${basename}_sorted.bam.bai
 rm -f ${basename}_sorted.bam
@@ -78,6 +83,7 @@ rm -f ${basename}_rmdup.spike.bam
 rm -f ${basename}.PCR_duplicates
 rm -f ${basename}.spike.PCR_duplicates
 rm -f ${basename}.bed 
+rm -f ${basename}.norm.bg
 mv $raw_fastq_read1 ../
 mv $raw_fastq_read2 ../
 
@@ -91,6 +97,7 @@ cd ..
 mkdir -p BedGraph_files
 cd BedGraph_files
 mv ../${basename}/${basename}.bg ./
+mv ../${basename}/${basename}.norm.sort.bg ./
 cd ..
 
 mkdir -p Bed_files
@@ -99,10 +106,33 @@ mv ../${basename}/${basename}.sort.bed ./
 mv ../${basename}/${basename}.spike.bed ./
 cd ..
 
+mkdir -p BigWig_files
+cd BigWig_files
+mv ../${basename}/${basename}.norm.bw ./
+cd ..
+
 mkdir -p Mapping_summary
 cd Mapping_summary
 mv ../${basename}/${basename}_ChIP-seq_mapping_summary.txt ./
 cd ..
 rm -r $basename
+
+###7.prepare the track for UCSC
+cd BedGraph_files
+lines=$(wc -l ${basename}.norm.sort.bg | cut -d ' ' -f 1)
+if [ $lines -le 50000000 ]; then
+sed -i '1i\track type=bedGraph name='${basename}' description='${basename}' color=0,0,0' ${basename}.norm.sort.bg
+gzip ${basename}.norm.sort.bg
+
+elif [ $lines -gt 50000000 ]; then
+l=$(expr $line + 1)
+a=$(expr $l / 2)
+head ${basename}.norm.sort.bg -n $a > ${basename}.1.norm.sort.bg
+tail ${basename}.norm.sort.bg -n $a > ${basename}.2.norm.sort.bg
+sed -i '1i\track type=bedGraph name='${basename}.1' description='${basename}.1' color=0,0,0' ${basename}.1.norm.sort.bg
+sed -i '1i\track type=bedGraph name='${basename}.2' description='${basename}.2' color=0,0,0' ${basename}.2.norm.sort.bg
+gzip ${basename}.1.norm.sort.bg
+gzip ${basename}.2.norm.sort.bg
+fi
 
 echo "=== All done successfully."
