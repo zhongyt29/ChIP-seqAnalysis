@@ -15,6 +15,10 @@ basename=$4
 file1=$5
 file2=$6
 
+mkdir -p $basename
+cd $basename
+mv ../$file1 ./
+mv ../$file2 ./
 
 ###1.adapter trimming
 echo "trimming adaptor"
@@ -69,7 +73,7 @@ samtools view -h  ${basename}_rmdup.spike.bam | python /share/home/zhongyiting/p
 nor=$(wc -l ${basename}.spike.bed | cut -d ' ' -f 1)
 awk '{printf("%s\t%d\t%d\t%.2f\n",$1,$2,$3,$4*10000000/'${nor}')}' ${basename}.bg > ${basename}.norm.bg
 bedSort ${basename}.norm.bg ${basename}.norm.sort.bg
-bedGraphToBigWig ${basename}.norm.sort.bg /share/Genomes/${genome}/Sequence/${genome}.chrom.sizes ${basename}.norm.bw
+bedGraphToBigWig ${basename}.norm.sort.bg /share/Genomes/${assembly}/Sequence/${assembly}.chrom.sizes ${basename}.norm.bw
 
 ###6.organize files and folders
 rm -f *sam
@@ -83,8 +87,8 @@ rm -f ${basename}.PCR_duplicates
 rm -f ${basename}.spike.PCR_duplicates
 rm -f ${basename}.bed 
 rm -f ${basename}.norm.bg
-mv $raw_fastq_read1 ../
-mv $raw_fastq_read2 ../
+mv $file1 ../
+mv $file2 ../
 
 cd ..
 mkdir -p Bam_files
