@@ -71,7 +71,7 @@ samtools view -h  ${basename}_rmdup.spike.bam | python /share/home/zhongyiting/p
 
 ###5.normalize and make bigwig file
 nor=$(wc -l ${basename}.spike.bed | cut -d ' ' -f 1)
-awk '{printf("%s\t%d\t%d\t%.2f\n",$1,$2,$3,$4*100000000/'${nor}')}' ${basename}.bg > ${basename}.norm.bg
+awk '{printf("%s\t%d\t%d\t%.2f\n",$1,$2,$3,$4*1000000/'${nor}')}' ${basename}.bg > ${basename}.norm.bg
 bedSort ${basename}.norm.bg ${basename}.norm.sort.bg
 bedGraphToBigWig ${basename}.norm.sort.bg /share/Genomes/${assembly}/Sequence/${assembly}.chrom.sizes ${basename}.norm.bw
 
